@@ -89,7 +89,7 @@ gtrans(Moreno,mode="graph")
 
 
 ####**Structuri de date pentru o retea*** 
-  In majoritatea cazurilor datele sunt stocate sub forma unordreptunghiri care contin randuri cu valorile individuale ale fiecarei coloane. Din cauza ca retele contin tipuri de relatii
+  In majoritatea cazurilor datele sunt stocate sub forma unor dreptunghiri care contin randuri cu valorile individuale ale fiecarei coloane. Din cauza ca retele contin tipuri de relatii
 complicate de date necesota o structura de stocare diferita, cum ar fi un graf in care informatia este o relatie intre mai multi membrii ai retelei.
   O alta modalitate de a descrie datele din retea este de a le aranja intr-o matrice. Acest tip de matrice se numeste'sociomatrix', in care gasim valori doar de 0 si 1 (1 reprezantand existenta legaturi intre doua noduri, iar 0 opusul). Aceasta matrice o un mare dezavantaj deoarece pe
 masura ce reteau creste valorile de 1 vor fi din ce in ce mai rare. 'Edge lists' sunt liste in care contin doua coloane, prima coloana cotine sursa muchiei retelei, iar cea de a doua contine destinatia. Acest lucru face ca listele care contin muchii sa fie alese in detrimentul 'sociomatrix' cand vine vorba de retele mari.Obiectele reprezinta un alt mod de a stoca date despre o retea cand vine vorba de date complexe. Acestea pot contine panala 5 tipuri diferite de date: noduri(lista nodurilor din retea), legaturi (lista legaturilor din retea), atributele nodurilor, atributele legaturilor si metadata (contine informatii suplimentare despre retea).

@@ -9,17 +9,6 @@ output:
     highlight: pygments
 ---
 
-#**Vizualizarea retelelor**
-***
-
----
-title: "projectX"
-output:
-  slidy_presentation: default
-  html_document:
-    highlight: pygments
----
-
 #**Introducere**
 
 Instalarea resurselor necesare
@@ -29,7 +18,7 @@ Instalarea resurselor necesare
 ```
 
 
-#**Capitolul 2**
+#**Analizarea si gestionarea datelor dintr-o retea**
 ***
 ##**Analizarea unei retele**
 
@@ -96,9 +85,6 @@ gtrans(Moreno,mode="graph")
 ```
 
 
-
-#** Capitolul 3**
-***
 ##**Gestionarea datelor dintr-o retea**
 
 
@@ -341,6 +327,8 @@ summary(net1symm)
 ```
   
   
+#**Vizualizarea retelelor**
+***
 ##**1. Tehnici de plotare si layout**
 
 Reprezentarea vizuala a retelelor este o provocare. Numarul de moduri in care o retea poate fi reprezentata vizual este practic infinit. Un grafic sugestiv va transmite informatiile importante despre retea, cum ar fi structura generala, locatia actorilor importanti din retea, prezenta unor subgrupuri distinctive. De asemenea, informatia irelevanta trebuie sa fie cat mai putina.

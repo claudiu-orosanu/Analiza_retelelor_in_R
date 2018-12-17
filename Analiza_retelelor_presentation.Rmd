@@ -8,20 +8,16 @@ output:
   slidy_presentation: default
 ---
 
-#**Introducere**
+#**Analizarea si gestionarea datelor dintr-o retea**
+***
+###**Analizarea unei retele**
 
-Instalarea resurselor necesare
+####**Preparea datelor**
 ```{r echo=TRUE, warning=FALSE, message=FALSE}
     library(devtools) 
    install_github("DougLuke/UserNetR")
 ```
 
-
-#**Analizarea si gestionarea datelor dintr-o retea**
-***
-###**Analizarea unei retele**
-
-####**Preparea datelor***
   Pachetul 'statnet' va fi folosit pentru analizarea retelei Moreno. Moreno este o retea ce modeleaza relatiile de prietenie dintre copii de clasa a 4 a.
 ```{r echo=TRUE, warning=FALSE, message=FALSE}
 library(statnet) 
@@ -29,7 +25,7 @@ library(UserNetR)
 data(Moreno)
 ```
 
-####**Simpla vizualizare a datelor***
+####**Simpla vizualizare a datelor**
   Pentru a vizuliza o retea simpla vom crea o retea care va arata conexiunile dintre membrii acestia bazata pe sex-ul lor
 ```{r}
 gender <- Moreno %v% "gender" 
@@ -37,7 +33,7 @@ plot(Moreno, vertex.col = gender + 2, vertex.cex = 1.2)
 ```
   
   
-####**Descrierea functiilor de baza***  
+####**Descrierea functiilor de baza**  
 Determinarea dimensiunii retelei
 ```{r}
 network.size(Moreno)
@@ -50,7 +46,7 @@ network.size(Moreno)
 summary(Moreno, print.adj = FALSE)
 ```
 
-
+***
   Densitatea este procentul de legturi care exista in toata reteaua in raport cu numarul maxim de legaturi care pot exista.Formula cu care se caluleaza densitatea unei retele este: L/(k*(k-1)). L numarul de legaturi existente, k  - numarul de noduri. 
 ```{r}
 den_hand <- 2*46/(33*32) 
@@ -75,22 +71,23 @@ gd <- geodist(lgc)
 max(gd$gdist)
 ```
 
-####**Coeficientul de clusterizare***  
+####**Coeficientul de clusterizare**
+
   Coeficientul de clusterizare este dat de transitivitatea retelei, adica procentul de triunghiuri create intre nodurile retelei. Transitivitatea este calculata de functia 'gtrans'.
 ```{r}
 gtrans(Moreno,mode="graph")
 ```
-
+***
 
 ###**Gestionarea datelor dintr-o retea**
 
 
-####**Structuri de date pentru o retea*** 
+####**Structuri de date pentru o retea**
   O modalitate de a descrie datele din retea este de a le aranja intr-o matrice. Acest tip de matrice se numeste'sociomatrix', in care gasim valori doar de 0 si 1 (1 reprezantand existenta legaturi intre doua noduri, iar 0 opusul).
   'Edge lists' sunt liste in care contin doua coloane, prima coloana cotine sursa muchiei retelei, iar cea de a doua contine destinatia. Acest lucru face ca listele care contin muchii sa fie alese in detrimentul 'sociomatrix' cand vine vorba de retele mari.Obiectele reprezinta un alt mod de a stoca date despre o retea cand vine vorba de date complexe. Acestea pot contine panala 5 tipuri diferite de date: noduri(lista nodurilor din retea), legaturi (lista legaturilor din retea), atributele nodurilor, atributele legaturilor si metadata (contine informatii suplimentare despre retea).
 
 
-####**Creare si gestionarea obiectelor intr-o retea*** 
+####**Creare si gestionarea obiectelor intr-o retea**
 Pentru a crea o un obiect al unei retele folosim functia 'network()', dar mai intai trebui creata o matrice de adiacenta
 ```{r}
 netmat1 <- rbind(c(0,1,1,0,0), 
@@ -123,7 +120,7 @@ net2 <- network(netmat2,matrix.type="edgelist")
 network.vertex.names(net2) <- c("A","B","C","D","E") 
 summary(net2)
 ```
-  
+  ***
 
 In libraria 'statnet' contine si functii prin care o retea poate fi inversate in alte tipuri de date
 ```{r}
@@ -158,7 +155,7 @@ summary(net1 %e% "rndval")
 summary(get.edge.attribute(net1,"rndval"))
 ```
   
-
+***
 
   Cream o matrice de adiacenta in care fiecare muchie reprezinta un nivel de 'like' (0,1,2,3) intre mebrii retelei:
 ```{r}
@@ -208,7 +205,7 @@ class(net1)
 net1igraph <- asIgraph(net1) 
 class(net1igraph)
 ```
-   
+  
 ####**Importarea datelor intr-o retea*** 
 
   Cream o lista cu muchii pe care o salvam intr-un fisier CSV dupa care citim din fisier si il transformam intr-un obiect
@@ -233,7 +230,7 @@ summary(net_import)
 
 gden(net_import)
 ```
-
+***
 ####**Operatii pe datele dintr-o retea*** 
 
 #####**Filtrarea retelelor***      

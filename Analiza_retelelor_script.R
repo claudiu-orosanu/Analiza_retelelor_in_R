@@ -1,5 +1,296 @@
 # Vizualizarea retelelor
 
+
+# instalarea resurselor necesare
+# library(devtools) 
+# install_github("DougLuke/UserNetR")
+
+# pachetul 'statnet' va fi folosit 
+# pentru analizarea retelei Morno
+library(statnet) 
+# importam pachetul de date
+library(UserNetR) 
+data(Moreno)
+
+#extragem date in functie de sex-ul membrilor
+gender <- Moreno %v% "gender"
+#plotam un graficul pentru reteau Moreno
+#vertex.cex - grosimea nodurilor
+plot(Moreno, vertex.col = gender + 2, vertex.cex = 1.2)
+
+# vom afla dimensiunea retelei (numarul de noduri)
+network.size(Moreno)
+## [1] 33
+
+
+# pentru a afla mai multe informatii desprea retea 
+#putem folosi functia 'summary',Setand proprietatea 
+#print.adj cu fals oprim afisarea informatiilor despre 
+#adiacente 
+summary(Moreno, print.adj = FALSE)
+
+
+#densitatea unui graf neorientat: (2*L)/(k*(k-1))
+den_hand <- 2*46/(33*32) 
+den_hand
+## [1] 0.0871
+
+#pentru a calcula densitatea avem metoda 'gden'.
+gden(Moreno)
+## [1] 0.0871
+
+#O retea poate fi impartita in mai multe grupe(componente),
+components(Moreno)
+
+
+
+#Extragem cea mai mare componenta din reteau Moreno
+#(care contine 31 de noduri conectate) intr-o noua
+#matrice. Caile cele mai scurte sunt calculate de functia 
+#'geodist()'. Maximul cailor cele mai scurte este extras
+#'#obtinandu-se diametrul retelei.
+lgc <- component.largest(Moreno,result="graph") 
+gd <- geodist(lgc) 
+max(gd$gdist)
+## [1] 11
+
+#Transitivitatea este calculata de functia 'gtrans'
+gtrans(Moreno,mode="graph")
+## [1] 0.28
+
+
+
+#Pentru a crea o un obiect al unei retele folosim functia
+#'network()', dar mai intai trebui creata o matrice de 
+#'#adiacenta
+netmat1 <- rbind(c(0,1,1,0,0), 
+                 c(0,0,1,1,0), 
+                 c(0,1,0,0,0), 
+                 c(0,0,0,0,0), 
+                 c(0,0,1,0,0)) 
+rownames(netmat1) <- c("A","B","C","D","E") 
+colnames(netmat1) <- c("A","B","C","D","E") 
+net1 <- network(netmat1,matrix.type="adjacency") 
+class(net1)
+summary(net1)
+
+
+#vizualizarea retelei noi create
+gplot(net1, vertex.col = 2, displaylabels = TRUE)
+
+#Aceasi retea poate fi creata cu urmatorul cod:
+netmat2 <- rbind(c(1,2), 
+                 c(1,3), 
+                 c(2,3), 
+                 c(2,4), 
+                 c(3,2), 
+                 c(5,3)) 
+net2 <- network(netmat2,matrix.type="edgelist") 
+network.vertex.names(net2) <- c("A","B","C","D","E") 
+summary(net2)
+
+#tansformarea intr-o matrice de tip 'sociomatrix'
+as.sociomatrix(net1)
+class(as.sociomatrix(net1))
+#tansformarea intr-o lista de muchii
+all(as.matrix(net1) == as.sociomatrix(net1))
+as.matrix(net1,matrix.type = "edgelist")
+
+
+#setam atribute(sex-ul membrilor) pentru nodurile retelei
+set.vertex.attribute(net1, "gender", c("F", "F", "M", "F", "M"))
+#vom seta un vector numeric ca si atribut
+net1 %v% "alldeg" <- degree(net1) 
+list.vertex.attributes(net1)
+
+
+# afisarea atributului 'gender'
+get.vertex.attribute(net1, "gender")
+net1 %v% "alldeg"
+
+
+#setam un numar ales aleator fiecarei muchii din retea
+# si afisam aceasta informatie
+list.edge.attributes(net1)
+set.edge.attribute(net1,"rndval", 
+                   runif(network.size(net1),0,1)) 
+list.edge.attributes(net1)
+## [1] "na" "rndval"
+summary(net1 %e% "rndval")
+## Min. 1st Qu. Median Mean 3rd Qu. Max. 
+## 0.163 0.165 0.220 0.382 0.476 0.980
+summary(get.edge.attribute(net1,"rndval"))
+## Min. 1st Qu. Median Mean 3rd Qu. Max. 
+## 0.163 0.165 0.220 0.382 0.476 0.980
+
+#Cream o matrice de adiacenta in care fiecare muchie
+#reprezinta un nivel de 'like'(0,1,2,3) intre mebrii retelei
+netval1 <- rbind(c(0,2,3,0,0), 
+                 c(0,0,3,1,0), 
+                 c(0,1,0,0,0), 
+                 c(0,0,0,0,0), 
+                 c(0,0,2,0,0)) 
+netval1 <- network(netval1,matrix.type="adjacency", 
+                   ignore.eval=FALSE,names.eval="like") 
+network.vertex.names(netval1) <- c("A","B","C","D","E") 
+list.edge.attributes(netval1)
+## [1] "like" "na"
+get.edge.attribute(netval1, "like")
+## [1] 2 1 3 3 2 
+
+#Afisarea matricei de legatura
+as.sociomatrix(netval1)
+#Afisarea matricei care contine numarul de like-uri
+as.sociomatrix(netval1,"like")
+
+
+#Libraria 'igraph' este folosita pentru accesa informatii 
+#despre retea, asemanator cu libraria 'network'.
+detach(package:statnet) 
+library(igraph)
+
+#Cream un graf folosind o matrice de adiacenta, unde
+# D indica un graf orientat, N indica faptul ca nodurile
+#au nume. De asemenea avem numarul de noduri (5) dar si
+#numarul de muchii (6)
+inet1 <- graph.adjacency(netmat1) 
+class(inet1)
+## [1] "igraph"
+summary(inet1)
+## IGRAPH DN-- 5 6 -
+## + attr: name (v/c)
+str(inet1)
+## IGRAPH DN-- 5 6 -
+## + attr: name (v/c) 
+## + edges (vertex names): 
+## [1] A->B A->C B->C B->D C->B E->C
+inet2 <- graph.edgelist(netmat2) 
+summary(inet2)
+## IGRAPH D--- 5 6 -
+
+# Pentru a asigura posibilitatea de folosi functii din
+#'statnet' pe date din obiectele retelelor care au fost
+#'#construite cu 'igraph' sau vice-versa, folosim 
+#'#libraria 'intergraph' 
+library(intergraph) 
+class(net1)
+## [1] "network"
+net1igraph <- asIgraph(net1) 
+class(net1igraph)
+## [1] "igraph"
+str(net1igraph)
+## IGRAPH D--- 5 6 -
+## + attr: alldeg (v/n), gender (v/c), na 
+## | (v/l), vertex.names (v/c), na (e/l), 
+## | rndval (e/n) ## + edges: 
+## [1] 1->2 3->2 1->3 2->3 5->3 2->4
+
+#Cream o lista cu muchii pe care o salvam intr-un fisier
+#CSV dupa care citim din fisier si il transformam intr-un
+#obiect
+detach("package:igraph", unload=TRUE) 
+library(statnet)
+
+netmat3 <- rbind(c("A","B"), 
+                 c("A","C"), 
+                 c("B","C"),
+                 c("B","D"), 
+                 c("C","B"), 
+                 c("E","C")) 
+net.df <- data.frame(netmat3) 
+net.df
+##   X1 X2 
+## 1  A  B 
+## 2  A  C 
+## 3  B  C 
+## 4  B  D 
+## 5  C  B 
+## 6  E  C
+write.csv(net.df, file = "MyData.csv", 
+          row.names = FALSE) 
+net.edge <- read.csv(file="MyData.csv") 
+net_import <- network(net.edge, 
+                      matrix.type="edgelist") 
+summary(net_import)
+gden(net_import)
+
+
+#get.inducedSubgraph() este o functie care returneaza
+# un nou obiect al retelei care este bazat pe criteriul de
+#filtrare
+n1F <- get.inducedSubgraph(net1, 
+                           which(net1 %v% "gender" == "F")) 
+n1F[,]
+gplot(n1F,displaylabels=TRUE)
+#Se creaza un subset al retelei cu nodurile care au nota (variabila deg) 
+#mai mare decat 1. %s% reprezinta o prescurtare pentru 
+deg <- net1 %v% "alldeg" 
+n2 <- net1 %s% which(deg > 1)
+gplot(n2,displaylabels=TRUE)
+
+#importam un nou set de date
+#Utilizand functia 'isolates' putem detecta numarul de noduri izolate
+data(ICTS_G10) gden(ICTS_G10)
+## [1] 0.0112
+length(isolates(ICTS_G10))
+## [1] 96
+
+#stergem nodurile izolate
+n3 <- ICTS_G10 
+delete.vertices(n3,isolates(n3)) 
+gden(n3)
+length(isolates(n3))
+
+#utilizam setul de date DHHS
+data(DHHS) d <- DHHS 
+gden(d)
+## [1] 0.312
+# functia par() este folosita pentru a configura setarile legate
+# de plotarea graficelor (fonturi, culori, axe, titluri)
+
+# Parametri functie
+# mar - margini
+op <- par(mar = rep(0, 4)) 
+#plotam noul grafic
+gplot(d,gmode="graph",edge.lwd=d %e% 'collab', 
+      edge.col="grey50",vertex.col="lightblue", 
+      vertex.cex=1.0,vertex.sides=20) 
+par(op)
+
+#cream o matrice cu primii 6 membrii ai graficului
+as.sociomatrix(d)[1:6,1:6]
+#extragem valorile muchiilor 
+list.edge.attributes(d)
+#cream o matrice numai cu colaborarile dintre cei 6
+as.sociomatrix(d,attrname="collab")[1:6,1:6]
+
+#afisam toate legaturile posibile din graf
+table(d %e%"collab")
+
+#extragem intr-o matrice toate colaborarile care valoarea >=3
+d.val <- as.sociomatrix(d,attrname="collab") 
+#pe restul le setam cu 0
+d.val[d.val < 3] <- 0 
+d.filt <- as.network(d.val, directed=FALSE, 
+                     matrix.type="a",ignore.eval=FALSE, 
+                     names.eval="collab")
+summary(d.filt,print.adj=FALSE)
+gden(d.filt)
+#afisam noul grafic
+op <- par(mar = rep(0, 4)) 
+gplot(d.filt,gmode="graph",displaylabels=TRUE, 
+      vertex.col="lightblue",vertex.cex=1.3, 
+      label.cex=0.4,label.pos=5, displayisolates=FALSE) 
+par(op)
+
+#symmerize transforma un graf orientat intr-unul neorientat
+net1mat <- symmetrize(net1,rule="weak") 
+net1mat
+net1symm <- network(net1mat,matrix.type="adjacency") 
+#denumin nodurile din folosite in matrice
+network.vertex.names(net1symm) <- c("A","B","C","D","E") 
+summary(net1symm)
+
 # functia par() este folosita pentru a configura setarile legate
 # de plotarea graficelor (fonturi, culori, axe, titluri)
 

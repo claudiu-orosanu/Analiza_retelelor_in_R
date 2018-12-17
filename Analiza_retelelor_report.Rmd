@@ -13,8 +13,8 @@ output:
 
 Instalarea resurselor necesare
 ```{r echo=TRUE, warning=FALSE, message=FALSE}
-    library(devtools) 
-   install_github("DougLuke/UserNetR")
+library(devtools) 
+install_github("DougLuke/UserNetR")
 ```
 
 

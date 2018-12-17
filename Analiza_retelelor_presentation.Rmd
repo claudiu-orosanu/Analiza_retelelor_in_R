@@ -256,7 +256,6 @@ summary(net1symm)
 
 ```
   
-
 #**Vizualizarea retelelor**
 ***
 ##**1. Tehnici de plotare si layout**
@@ -280,6 +279,7 @@ Moreno este o retea ce modeleaza relatiile de prietenie dintre copii de clasa a 
 
 Lungimea muchiilor in aceste grafice nu are nicio insemnatate. Alegerea la intamplare a acestor lungimi poate induce in eroare.  
 
+---
 
 ###**Principii estetice in reprezentarea retelelor**
 
@@ -297,6 +297,8 @@ par(op)
 ```
 
 Algoritmii *force-directed* sunt iterativi si non-deterministici. Asta inseamna ca graficul rezultat nu va fi identic, la fiecare rulare, insa va fi destul de similar.
+
+---
 
 ###**Algoritmi si metode de plotare**
 In libraria *statnet*, exista doua functii prin care se poate realiza un grafic al unei retele: *plot* si *gplot*.
@@ -319,6 +321,9 @@ gplot(Bali,gmode="graph",edge.col="grey75",vertex.cex=1.5,mode='kamadakawai',mai
 
 par(op)
 ```
+
+---
+
 ####**Control mai ridicat asupra layout-ului**
 R ne ofera posibilitatea de a specifica coordonatele fiecarui nod, atunci cand cream un grafic al unei retele.
 
@@ -328,12 +333,25 @@ In urmatorul exemplu, vom folosi reteaua Bali, care reprezinta o retea de terori
 
 ```{r}
 mycoords1 <- gplot(Bali,gmode="graph",vertex.cex=1.5)
-mycoords1
+```
 
+---
+
+```{r}
+mycoords1
+```
+
+---
+
+```{r}
 mycoords2 <- mycoords1
 mycoords2[,2] <- mycoords1[,2]*1.5
 mycoords2
+```
 
+---
+
+```{r}
 op <- par(mar=c(4,3,4,3),mfrow=c(1,2))
 
 gplot(Bali,gmode="graph",vertex.cex=1.5,
@@ -348,6 +366,8 @@ gplot(Bali,gmode="graph",vertex.cex=1.5,
 
 par(op)
 ```
+
+---
 
 ####**Metode de plotare folosind libraria *igraph***
 Libraria **igraph** ne ofera optiuni similare in ceea ce priveste layout-ul graficului. Parametrul **layout** al functiei **plot** este util.
@@ -373,11 +393,15 @@ detach(package:intergraph)
 library(statnet)
 ```
 
+---
+
 ##**2. Design sugestiv in realizarea graficelor**
 
 Obiectivul principal al unui design eficace este de a dezvalui trasaturile importante ale unei retele si informatia continuta in aceasta. Pentru atingerea acestui scop, librariile *statnet* si *igraph* ofera control programatic asupra aspectului oricarui element din graficul retelei.
 
 > Excelenta in design-ul grafic presupune transmiterea unui numar cat mai mare de idei intr-un timp cat mai scurt, folosind cat mai putina cerneala si spatiu. - Edward Tufte
+
+---
 
 ###**Culoarea nodurilor**
 Implicit, *statnet* foloseste cercuri de culoare rosie pentru a reprezenta nodurile retelei. Culoarea nodurilor se poate configura prin optiunea **vertex.col** a functiei **gplot**.
@@ -386,14 +410,17 @@ Optiunea *gmode* este "graph" pentru a nu interpreta graful ca fiind orientat.
 gplot(Bali,vertex.col="slateblue2",gmode="graph")
 ```
 
-R ofera 657 de culori, care pot fi consultate folosind functia **colors()**. De asemenea, culorile se pot crea cu ajutorul functiei **rgb**, dar pot fi definite si ca stringuri formate din caractere hexazecimale (**#RRGGBB**). Functia **col2rgb** transforma o culoare predefinita (din colors()) intr-un triplet de intensitati.
+---
 
+R ofera 657 de culori, care pot fi consultate folosind functia **colors()**. De asemenea, culorile se pot crea cu ajutorul functiei **rgb**, dar pot fi definite si ca stringuri formate din caractere hexazecimale (**#RRGGBB**). Functia **col2rgb** transforma o culoare predefinita (din colors()) intr-un triplet de intensitati.
 
 ```{r}
 col2rgb('slateblue2')
 gplot(Bali,vertex.col=rgb(122,103,238,maxColorValue=255),gmode="graph")
 gplot(Bali,vertex.col="#7A67EE",gmode="graph")
 ```
+
+---
 
 De asemenea, functia **rgb** mai are si optiunea **alpha** care reprezinta transparenta nodurilor. Intr-un graf cu foarte multe noduri, acestea pot fi greu de distins daca se suprapun unele peste altele. Daca culorile sunt transparente, graficul e mai usor de inteles.
 
@@ -415,7 +442,9 @@ gplot(ndum,gmode="graph",
 par(op)
 ```
 
-De exemplu, reteaua Bali contine atributul *role* pentru fiecare nod, care reprezinta rolul fiecarui membru in gruparea terorita (BM - bomb maker, CT - command team, etc.). Reprezentarea fiecarui rol cu o culoare diferita poate ilustra mai bine informatia din interiorul retelei.
+---
+
+Reteaua Bali contine atributul *role* pentru fiecare nod, care reprezinta rolul fiecarui membru in gruparea terorita (BM - bomb maker, CT - command team, etc.). Reprezentarea fiecarui rol cu o culoare diferita poate ilustra mai bine informatia din interiorul retelei.
 
 ```{r}
 rolelab <- get.vertex.attribute(Bali,"role")
@@ -424,6 +453,7 @@ plot(Bali,usearrows=FALSE,vertex.cex=1.5,label=rolelab,displaylabels=T,vertex.co
 par(op)
 ```
 
+---
 
 Graficul este mai usor de interpretat acum, se pot observa mici subgrupuri (TL si BM). Totusi, culorile de mai sus sunt luate implicit din paleta de culori din R.
 
@@ -433,12 +463,18 @@ palette()
 
 Aceasta paleta de culori are cateva dezavantaje. Este limitata la 8 culori iar culorile incluse nu sunt sugestive in realizarea unui grafic. O alternativa mai buna este definirea unei palete de culori custom, cu ajutorul librariei *RColorBrewer*.
 
+---
+
 ```{r}
 library(RColorBrewer)
 display.brewer.pal(5, "Dark2")
 ```
 
-Acestea sunt 5 culori alese dintr-o paleta mai larga numita *Dark2*. Culorile sunt mai placute decat cele din paleta default. Pentru a crea un grafic folosind aceasta paleta de culori, se procedeaza in felul urmator:
+Acestea sunt 5 culori alese dintr-o paleta mai larga numita *Dark2*. Culorile sunt mai placute decat cele din paleta default.
+
+---
+
+Pentru a crea un grafic folosind aceasta paleta de culori, se procedeaza in felul urmator:
 ```{r}
 op <- par(mar=c(0,0,0,0))
 my_pal <- brewer.pal(5,"Dark2")
@@ -446,6 +482,8 @@ rolecat <- as.factor(get.vertex.attribute(Bali,"role"))
 plot(Bali,vertex.cex=1.5,label=rolelab,displaylabels=T,vertex.col=my_pal[rolecat])
 par(op)
 ```
+
+---
 
 ###**Forma nodurilor**
 Pe langa culoarea nodurilor, putem controla si forma lor. Acest lucru e util atunci cand sunt putine categorii de noduri. De asemenea, este folositor pentru persoanele care nu pot distinge culori. In libraria *statnet*, nodurile sunt practic poligoane, iar singurul lucru configurabil este numarul de laturi (3 - triunghi, 4 - patrat, etc.). 
@@ -456,6 +494,8 @@ plot(Bali,usearrows=FALSE,vertex.cex=4,displaylabels=F,vertex.sides=sidenum[role
 par(op)
 ```
 
+---
+
 ###**Marimea nodurilor**
 Marimea nodurilor este controlata prin optiunea **vertex.cex** a functiilor *gplot* si *plot*.
 ```{r}
@@ -465,6 +505,8 @@ plot(Bali,vertex.cex=2,main="Just right")
 plot(Bali,vertex.cex=6,main="Too large")
 par(op)
 ```
+
+---
 
 Mai interesanta este reprezentarea nodurilor prin **marimi diferite** penru a reliefa o **caracteristica cantitativa**.
 
@@ -479,6 +521,8 @@ bet <- betweenness(Bali,gmode="graph")
 bet
 ```
 
+---
+
 Vectorii rezultati contin, pentru fiecare nod, o marime relativa. In cazul primului vector **deg** care contine gradul fiecarui nod, valorile sunt prea mari, asa ca vom calcula logaritmul fiecare valori folosind functia **log**.
 
 ```{r}
@@ -488,20 +532,28 @@ plot(Bali,usearrows=FALSE,vertex.cex=log(deg),main="Adjusted")
 par(op)
 ```
 
+---
+
 Vectorul **cls** - valori prea mici
-Vectorul **bet** - valorile variaza foarte mult (unele sunt 0)
 
 ```{r}
 op <- par(mar = c(0,0,2,1),mfrow=c(1,2))
 plot(Bali,usearrows=T,vertex.cex=cls,main="Raw")
 plot(Bali,usearrows=FALSE,vertex.cex=4*cls,main="Adjusted")
 par(op)
+```
 
+---
+
+Vectorul **bet** - valorile variaza foarte mult (unele sunt 0)
+```{r}
 op <- par(mar = c(0,0,2,1),mfrow=c(1,2))
 plot(Bali,usearrows=T,vertex.cex=bet,main="Raw")
 plot(Bali,usearrows=FALSE,vertex.cex=sqrt(bet+1),main="Adjusted")
 par(op)
 ```
+
+---
 
 Aceste ajustari manuale pot fi obositoare. O functie utila pentru a ajusta valorile unui vector este urmatoarea:
 ```{r}
@@ -515,9 +567,13 @@ rescale <- function(nchar,low,high) {
 
 Functia **rescale** primeste un vector de numere si valorile *low* si *high*. La final, fiecare numar se va gasi in intervalul [low,high].
 
+---
+
 ```{r}
 plot(Bali,vertex.cex=rescale(deg,1,6),main="Adjusted node sizes with rescale function.")
 ```
+
+---
 
 ###**Etichete ale nodurilor**
 Daca un obiect de tip retea din libraria *statnet* contine atributul *vertex.names* pentru noduri, acesta poate fi folosit pentru a afisa automat etichetele cand se ploteaza graficul.
@@ -529,12 +585,16 @@ plot(Bali,displaylabels=TRUE,label.cex=0.8,pad=0.4,label.col="darkblue")
 par(op)
 ```
 
+---
+
 ```{r}
 op <- par(mar = c(0,0,0,0))
 rolelab <- get.vertex.attribute(Bali,"role")
 plot(Bali,usearrows=FALSE,label=rolelab,displaylabels=T,label.col="darkblue")
 par(op)
 ```
+
+---
 
 ###**Grosimea muchiilor**
 Daca reteaua contine legaturi care au asociate valori cantitative, atunci acestea pot fi reprezentate prin grosimea unei muchii.
@@ -546,6 +606,8 @@ IClevel <- Bali %e% "IC"
 plot(Bali,vertex.cex=1.5,edge.lwd=1.5*IClevel)
 par(op)
 ```
+
+---
 
 ###**Culoarea muchiilor**
 Spre deosebire de grosimea unei muchii, care transmite o valoare cantitativa, culoarea unei muchii comunica o valoare calitativa a legaturii dintre cele doua noduri. 
@@ -572,6 +634,8 @@ plot(Bali,vertex.cex=1.5,vertex.col="grey25",
 par(op)
 ```
 
+---
+
 ###**Tipul muchiilor**
 Asemanator culorii unei muchii, tipul acesteia poate comunica informatii calitative. Mergand pe acelasi exemplu, vom simula un atribut al muchiilor si vom plota folosind diferita tipuri de muchii (2-linie intrerupta; 3-linie punctata; 4-linie punctata si intrerupta).
 
@@ -589,6 +653,7 @@ gplot(Bali,vertex.cex=0.8,gmode="graph",vertex.col="gray50",
 par(op)
 ```
 
+---
 
 ###**Legende**
 O legenda are rolul de a clarifica informatiile continute in grafic. Functiile de baza de plotare din *statnet* nu ofera aceasta functionalitate, dar putem folosi functia **legend()** din limbajul R.
@@ -612,9 +677,12 @@ legend("bottomleft",
 par(op)
 ```
 
+---
 
 ##**3. Tehnici avansate de plotare a graficelor**
 Graficele realizate pana acum, cu ajutorul librariilor *statnet* si *igraph* au fost **statice**. Pentru reprezentarea mai specializata a unor retele, avem nevoie de interactiune.
+
+---
 
 ### **Retele interactive simple in *igraph***
 
@@ -636,9 +704,13 @@ MCoords <- tkplot.getcoords(Coord)
 plot(iBali, layout=MCoords, vertex.size=5,vertex.label=NA, vertex.color="lightblue")
 ```
 
+---
+
 <center>
 ![](./tkplot_window.png)
 </center>
+
+---
 
 ### **Diagrame interactive web-based**
 
@@ -654,10 +726,13 @@ net_edge <- data.frame(src, target)
 simpleNetwork(net_edge)
 ```
 
+
 ```{r}
 net_D3 <- simpleNetwork(net_edge)
 saveNetwork(net_D3,file = 'Net_test1.html',selfcontained=TRUE)
 ```
+
+---
 
 Un grafic interactiv mai complex poate fi realizat cu ajutorul functiei **forceNetwork()**
 
@@ -684,6 +759,8 @@ forceNetwork(Links = iBali_edge,
 
 ```
 
+---
+
 Pachetul **visNetwork** ofera functionalitati similare pentru realizarea graficelor interactive, fiind bazat pe libraria javascript *vis.js*.
 
 ```{r echo=F, message=F, warning=F}
@@ -699,12 +776,15 @@ iBali_nodes <- data.frame(id = as.numeric(V(iBali)))
 visNetwork(iBali_nodes, iBali_edge, width = "100%")
 ```
 
+---
 
 ### **Diagrame specializate**
 
 * Diagrame de tip *arc*
 * Diagrame de tip *chord*
 * Heatmaps
+
+---
 
 #### **Diagrame de tip *arc***
 
@@ -724,6 +804,8 @@ iSimp <- asIgraph(Simpsons)
 simp_edge <- get.edgelist(iSimp)
 arcplot(simp_edge)
 ```
+
+---
 
 Pentru a augmenta acest grafic, vom defini cateva subgrupuri in retea (1-familie; 2-colegi de munca; 3-colegi de scoala; 4-vecini) si vom folosi **culori diferite** pentru a distinge intre aceste categorii. De asemenea, folosim gradul unui nod pentru a obtine **marimea acestuia**.
 
@@ -746,6 +828,8 @@ arcplot(simp_edge,
         show.nodes = TRUE)
 ```
 
+---
+
 #### **Diagrame de tip *chord***
 
 Acest tip de diagrame specializate folosesc un layout circular care evidentiaza **inter-relatiile dintre datele stocate intr-o matrice**. Sunt potrivite, in special, pentru grafuri orientate si cu costuri, unde directia si cantitatea flow-urilor de date este de interes.
@@ -765,6 +849,9 @@ colnames(FIFAm) = names
 FIFAm
 
 ```
+
+---
+
 Pentru ca graficul sa nu fie greu de citit, vom renunta la legaturile care au mai putin de 10 pase.
 
 ```{r}
@@ -773,6 +860,8 @@ FIFAm
 
 chordDiagram(FIFAm)
 ```
+
+---
 
 Pentru a face graficul si mai sugestiv, vom modifica urmatoarele lucruri:
 
@@ -794,6 +883,8 @@ Noi descoperiri:
 * coechipierul favorit al portarului GK1 este fundasul DF4
 * DF4 da pase frecvent la DF5.
 
+---
+
 #### **Heatmaps**
 
 Acestea sunt o alta varianta de grafice specializate, utile, in special, atunci cand reteaua are costuri. In exemplul urmator, un astfel de grafic va evidentia jucatorii care ofera si primesc cele mai multe pase.
@@ -804,6 +895,8 @@ FIFAm <- as.sociomatrix(FIFA_Nether,attrname='passes')
 colnames(FIFAm) <- c("GK1","DF3","DF4","DF5","MF6","FW7","FW9","MF10","FW11","DF2","MF8")
 rownames(FIFAm) <- c("GK1","DF3","DF4","DF5","MF6","FW7","FW9","MF10","FW11","DF2","MF8")
 ```
+
+---
 
 Functia **colorRampPalette()** e folosita pentru a asigna o paleta de culori cu valori intre valoarea maxima din matrice si cea minima. Reteaua fiind una orientata, consideram ca jucatorii care **dau pase** sunt randurile, iar coloanele sunt jucatorii care **primesc pase**.
 

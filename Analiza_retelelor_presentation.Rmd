@@ -105,21 +105,7 @@ summary(net1)
 ```{r}
 gplot(net1, vertex.col = 2, displaylabels = TRUE)
 ```
-  
 
-
-  Aceasi retea poate fi creata cu urmatorul cod:
-```{r}
-netmat2 <- rbind(c(1,2), 
-                 c(1,3), 
-                 c(2,3), 
-                 c(2,4), 
-                 c(3,2), 
-                 c(5,3)) 
-net2 <- network(netmat2,matrix.type="edgelist") 
-network.vertex.names(net2) <- c("A","B","C","D","E") 
-summary(net2)
-```
   ***
 
 In libraria 'statnet' contine si functii prin care o retea poate fi inversate in alte tipuri de date
@@ -154,63 +140,11 @@ list.edge.attributes(net1)
 summary(net1 %e% "rndval")
 summary(get.edge.attribute(net1,"rndval"))
 ```
-  
-***
 
-  Cream o matrice de adiacenta in care fiecare muchie reprezinta un nivel de 'like' (0,1,2,3) intre mebrii retelei:
-```{r}
-netval1 <- rbind(c(0,2,3,0,0), 
-                 c(0,0,3,1,0), 
-                 c(0,1,0,0,0), 
-                 c(0,0,0,0,0), 
-                 c(0,0,2,0,0)) 
-netval1 <- network(netval1,matrix.type="adjacency", 
-                   ignore.eval=FALSE,names.eval="like") 
-network.vertex.names(netval1) <- c("A","B","C","D","E") 
-list.edge.attributes(netval1)
-## [1] "like" "na"
-get.edge.attribute(netval1, "like")
-```
-  
-  Afisarea matricei
-```{r}
-as.sociomatrix(netval1)
-as.sociomatrix(netval1,"like")
-```
-  
-
-
-  Libraria 'igraph' este folosita pentru accesa informatii despre retea, asemanator cu libraria 'network'.
-```{r}
-detach(package:statnet) 
-library(igraph)
-```
-  
-
-  Cream un graf folosind o matrice de adiacenta, unde D indica un graf orientat, N indica faptul ca nodurile au nume. De asemenea avem numarul de noduri (5) dar si numarul de muchii (6)
-```{r}
-inet1 <- graph.adjacency(netmat1) 
-class(inet1)
-summary(inet1)
-inet2 <- graph.edgelist(netmat2) 
-summary(inet2)
-```
-  
-
-
-   Pentru a asigura posibilitatea de folosi functii din 'statnet' pe date din obiectele retelelor care au fost  construite cu 'igraph' sau vice-versa, folosim libraria 'intergraph' 
-```{r}
-library(intergraph) 
-class(net1)
-net1igraph <- asIgraph(net1) 
-class(net1igraph)
-```
-  
 ####**Importarea datelor intr-o retea*** 
 
   Cream o lista cu muchii pe care o salvam intr-un fisier CSV dupa care citim din fisier si il transformam intr-un obiect
 ```{r}
-detach("package:igraph", unload=TRUE) 
 library(statnet)
 
 netmat3 <- rbind(c("A","B"), 

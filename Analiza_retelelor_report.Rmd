@@ -22,7 +22,8 @@ Instalarea resurselor necesare
 ***
 ##**Analizarea unei retele**
 
-####**Preparea datelor***
+####**Preparea datelor**
+
   Pachetul 'statnet' va fi folosit pentru analizarea retelei Moreno. Moreno este o retea ce modeleaza relatiile de prietenie dintre copii de clasa a 4 a.
 ```{r echo=TRUE, warning=FALSE, message=FALSE}
 library(statnet) 
@@ -30,7 +31,8 @@ library(UserNetR)
 data(Moreno)
 ```
 
-####**Simpla vizualizare a datelor***
+####**Simpla vizualizare a datelor**
+
   Pentru a vizuliza o retea simpla m crea o retea care va arata conexiunile dintre membrii acestia bazata pe sex-ul lor
 ```{r}
 gender <- Moreno %v% "gender" 
@@ -38,12 +40,12 @@ plot(Moreno, vertex.col = gender + 2, vertex.cex = 1.2)
 ```
   
   
-####**Descrierea functiilor de baza***  
+####**Descrierea functiilor de baza**
+
 Determinarea dimensiunii retelei
 ```{r}
 network.size(Moreno)
 ```
-
 
 
   Pentru a afla mai multe informatii desprea retea putem folosi functia 'summary'.Setand proprietatea print.adj cu fals oprim afisarea informatiilor despre adiacente
@@ -78,7 +80,7 @@ gd <- geodist(lgc)
 max(gd$gdist)
 ```
 
-####**Coeficientul de clusterizare***  
+####**Coeficientul de clusterizare**
   Coeficientul de clusterizare este dat de transitivitatearetelei, adica procentul de triunghiuri create intre nodurileretelei. Transitivitatea este calculata de functia 'gtrans'.
 ```{r}
 gtrans(Moreno,mode="graph")
@@ -88,14 +90,14 @@ gtrans(Moreno,mode="graph")
 ##**Gestionarea datelor dintr-o retea**
 
 
-####**Structuri de date pentru o retea*** 
+####**Structuri de date pentru o retea** 
   In majoritatea cazurilor datele sunt stocate sub forma unor dreptunghiri care contin randuri cu valorile individuale ale fiecarei coloane. Din cauza ca retele contin tipuri de relatii
 complicate de date necesota o structura de stocare diferita, cum ar fi un graf in care informatia este o relatie intre mai multi membrii ai retelei.
   O alta modalitate de a descrie datele din retea este de a le aranja intr-o matrice. Acest tip de matrice se numeste'sociomatrix', in care gasim valori doar de 0 si 1 (1 reprezantand existenta legaturi intre doua noduri, iar 0 opusul). Aceasta matrice o un mare dezavantaj deoarece pe
 masura ce reteau creste valorile de 1 vor fi din ce in ce mai rare. 'Edge lists' sunt liste in care contin doua coloane, prima coloana cotine sursa muchiei retelei, iar cea de a doua contine destinatia. Acest lucru face ca listele care contin muchii sa fie alese in detrimentul 'sociomatrix' cand vine vorba de retele mari.Obiectele reprezinta un alt mod de a stoca date despre o retea cand vine vorba de date complexe. Acestea pot contine panala 5 tipuri diferite de date: noduri(lista nodurilor din retea), legaturi (lista legaturilor din retea), atributele nodurilor, atributele legaturilor si metadata (contine informatii suplimentare despre retea).
 
 
-####**Creare si gestionarea obiectelor intr-o retea*** 
+####**Creare si gestionarea obiectelor intr-o retea**
 Pentru a crea o un obiect al unei retele folosim functia 'network()', dar mai intai trebui creata o matrice de adiacenta
 ```{r}
 netmat1 <- rbind(c(0,1,1,0,0), 
@@ -189,7 +191,7 @@ as.sociomatrix(netval1,"like")
 
 
   Libraria 'igraph' este folosita pentru accesa informatii despre retea, asemanator cu libraria 'network'.
-```{r}
+```{r echo=T, message=F, warning=F}
 detach(package:statnet) 
 library(igraph)
 ```
@@ -208,19 +210,21 @@ summary(inet2)
 
    Pentru a asigura posibilitatea de folosi functii din 'statnet' pe date din obiectele retelelor care au fost  construite cu 'igraph' sau vice-versa, folosim libraria 'intergraph' 
 ```{r}
-library(intergraph) 
+library(intergraph)
 class(net1)
 net1igraph <- asIgraph(net1) 
 class(net1igraph)
 ```
    
-####**Importarea datelor intr-o retea*** 
+####**Importarea datelor intr-o retea**
 
   Cream o lista cu muchii pe care o salvam intr-un fisier CSV dupa care citim din fisier si il transformam intr-un obiect
-```{r}
+```{r echo=T, message=F, warning=F}
 detach("package:igraph", unload=TRUE) 
 library(statnet)
+```
 
+```{r}
 netmat3 <- rbind(c("A","B"), 
                  c("A","C"), 
                  c("B","C"),
@@ -239,9 +243,9 @@ summary(net_import)
 gden(net_import)
 ```
 
-####**Operatii pe datele dintr-o retea*** 
+####**Operatii pe datele dintr-o retea**
 
-#####**Filtrarea retelelor***      
+#####**Filtrarea retelelor**     
      
   Intr-un obiect al retelei putem gasi caracteristici ale nodurilor salvate ca atribute ale muchiilor. Aceasta informatie poate fi folosita pentru a selecta sub retele pentru analiza get.inducedSubgraph() este o functie care returneaza un nou obiect al retelei care este bazat pe criteriul de filtrare
 

@@ -1,14 +1,3 @@
----
-title: "Analiza retelelor in R"
-author:
-- name: Nicula Florin (Gr 405)
-- name: Orosanu Claudiu (Gr 405)
-date: "`r format(Sys.time(), '%d %B %Y')`"
-output: 
-  html_document:
-  highlight: pygments
----
-
 # Vizualizarea retelelor
 
 # functia par() este folosita pentru a configura setarile legate

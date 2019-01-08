@@ -1,0 +1,283 @@
+---
+title: "Analiza retelei de personaje GoT"
+author: "Nicula Florin (Gr 406), Orosanu Claudiu (Gr 405)"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+  slidy_presentation: default
+---
+
+## La ce ne ajuta analiza retelelor?
+
+Exemplu: retele de socializare
+
+- Cati prieteni are o persoana?
+- Cine este cea mai populara/influenta persoana? 
+- Exista grupuri stranse de persoane?
+- Exista persoane cheie care fac legatura dintre anumite grupuri?
+
+---
+
+## Reteaua de caractere din Game of Thrones
+
+```{r warning=FALSE, message=FALSE}
+library(tidyverse)
+library(igraph)
+library(statnet)
+```
+
+```{r}
+load("union_edges.RData")
+load("union_characters.RData")
+```
+
+---
+
+```{r}
+head(union_characters)
+```
+
+---
+
+```{r}
+head(union_edges)
+```
+
+Muchiile reprezinta:
+
+- relatii parinte-copil
+- relatii de casatorie
+
+Muchiile punctate sunt relatii care exista doar in serialul TV, nu si in carti.
+
+---
+
+## Crearea obiectului de tip igraph din cele doua data frame-uri
+
+```{r}
+union_graph <- graph_from_data_frame(union_edges, directed = TRUE, vertices = union_characters)
+
+union_graph
+```
+
+---
+
+## Definirea informatiilor din legenda
+
+```{r}
+color_vertices <- union_characters %>%
+  group_by(house, color) %>%
+  summarise(n = n()) %>%
+  filter(!is.na(color))
+
+head(color_vertices)
+
+colors_edges <- union_edges %>%
+  group_by(type, color) %>%
+  summarise(n = n()) %>%
+  filter(!is.na(color))
+
+head(colors_edges)
+```
+
+Functiile de mai sus sunt din pachetul *dplyr* si permit manipularea datelor (grupari, agregari, filtrari)
+
+## Layout
+
+Folosim un layout de tip Fruchterman-Reingold.
+
+```{r}
+layout <- layout_with_fr(union_graph)
+```
+
+---
+
+## Plotarea grafului prin functia *plot*
+
+```{r fig.width=40, fig.height=40}
+plot(union_graph,
+     layout = layout,
+     vertex.label = gsub(" ", "\n", V(union_graph)$name),
+     vertex.shape = V(union_graph)$shape,
+     vertex.color = V(union_graph)$color, 
+     vertex.size = (V(union_graph)$popularity + 0.5) * 5, 
+     vertex.frame.color = "gray", 
+     vertex.label.color = "black", 
+     vertex.label.cex = 0.8,
+     edge.arrow.size = 0.5,
+     edge.color = E(union_graph)$color,
+     edge.lty = E(union_graph)$lty)
+legend("topleft", legend = c(NA, "Node color:", as.character(color_vertices$house), NA, "Edge color:", as.character(colors_edges$type)), pch = 19,
+       col = c(NA, NA, color_vertices$color, NA, NA, colors_edges$color), pt.cex = 5, cex = 2, bty = "n", ncol = 1,
+       title = "") 
+legend("topleft", legend = "", cex = 4, bty = "n", ncol = 1,
+       title = "Game of Thrones Family Ties")
+```
+
+* Culoarea unui nod - casa din care face parte personajul
+* Marimea unui nod - popularitatea personajului
+* Forma unui nod - sexul (masculin - patrat; feminin - cerc)
+
+## Observatii
+
+- relatiile dintre case sunt destul de putine (acestea se fac, de regula, printr-un anumit personaj)
+- casa Greyjoy nu are legaturi cu celelalte case
+
+---
+
+## Cum aflam care sunt caracterele cele mai importante?
+
+#### Centralitate - cat de bine conectat este un nod cu celelalte noduri din retea.
+
+Centralitatea unui nod poate fi calculata in functie de:
+
+- Grad
+- Apropierea (closeness)
+- Betweenness
+- Diametru
+- Tranzitivitate
+- PageRank
+- Eigenvector
+
+---
+
+##Gradul unui nod
+
+Centralitatea calculata in functie de gradul nodului depinde de cate muchii intra/ies in/din nodul respectiv. Practic, cu cat este mai mare numarul de muchii adiacente unui nod, cu atat este mai mare centralitatea nodului.
+
+```{r}
+union_graph_undir <- as.undirected(union_graph, mode = "collapse")
+```
+
+```{r}
+union_graph_undir_degree <- igraph::degree(union_graph_undir, mode = "total")
+#standardized by number of nodes
+union_graph_undir_degree_std <- union_graph_undir_degree / (vcount(union_graph_undir) - 1)
+```
+
+```{r}
+node_degree <- data.frame(degree = union_graph_undir_degree,
+                          degree_std = union_graph_undir_degree_std) %>%
+  tibble::rownames_to_column()
+union_characters <- left_join(union_characters, node_degree, by = c("name" = "rowname"))
+node_degree %>%
+  arrange(-degree) %>%
+  .[1:10, ]
+```
+
+####Observatie
+
+Dupa acest criteriu, Quellon Greyjoy ar fi cel mai important personaj, prin prisma faptului ca a avut multi copii (i-au placut femeile). Totusi, majoritatea fanilor GOT nu l-ar considera prea important (probabil ar intreba "Cine mai e si asta? N-am auzit de el"). 
+
+---
+
+## Apropiere (closeness)
+
+Apropierea - distanta unui nod fata de **toate** celelalte noduri. Un nod cu apropierea mare este mai central si poate imparti informatie cu multe noduri.
+
+```{r warning=F}
+closeness <- igraph::closeness(union_graph_undir, mode = "total")
+#standardized by number of nodes
+closeness_std <- closeness / (vcount(union_graph_undir) - 1)
+```
+
+```{r}
+node_closeness <- data.frame(closeness = closeness,
+                          closeness_std = closeness_std) %>%
+  tibble::rownames_to_column()
+union_characters <- left_join(union_characters, node_closeness, by = c("name" = "rowname"))
+node_closeness %>%
+  arrange(-closeness) %>%
+  .[1:10, ]
+```
+
+Putem observa ca, calculul centralitatii in functie de apropiere ilustreaza mult mai bine importanta caracterelor. Caracterele cele mai importante sunt, in general, cele care apar in cele mai multe evenimente din poveste. 
+
+---
+
+## Betweenness
+
+Betweenness - cate drumuri de cost minim trec prin nodul/muchia respectiv/a?
+
+Caracterele cheie, care fac legatura dintre case, au acest coeficient marit.
+
+```{r}
+betweenness <- igraph::betweenness(union_graph_undir, directed = FALSE)
+# standardize by number of node pairs
+betweenness_std <- betweenness / ((vcount(union_graph_undir) - 1) * (vcount(union_graph_undir) - 2) / 2)
+node_betweenness <- data.frame(betweenness = betweenness,
+                               betweenness_std = betweenness_std) %>%
+  tibble::rownames_to_column() 
+union_characters <- left_join(union_characters, node_betweenness, by = c("name" = "rowname"))
+node_betweenness %>%
+  arrange(-betweenness) %>%
+  .[1:10, ]
+```
+
+```{r}
+edge_betweenness <- igraph::edge_betweenness(union_graph_undir, directed = FALSE)
+data.frame(edge = attr(E(union_graph_undir), "vnames"),
+           betweenness = edge_betweenness) %>%
+  tibble::rownames_to_column() %>%
+  arrange(-betweenness) %>%
+  .[1:10, ]
+```
+
+Ned Stark se claseaza cel mai bine aici, ceea ce este plauzibil, deoarece el si copiii lui (mai ales Sansa) conecteaza cele mai importante familii.
+
+---
+
+```{r fig.width=35, fig.height=35}
+plot(union_graph_undir,
+     layout = layout,
+     vertex.label = gsub(" ", "\n", V(union_graph_undir)$name),
+     vertex.shape = V(union_graph_undir)$shape,
+     vertex.color = V(union_graph_undir)$color, 
+     vertex.size = betweenness * 0.001, 
+     vertex.frame.color = "gray", 
+     vertex.label.color = "black", 
+     vertex.label.cex = 0.8,
+     edge.width = edge_betweenness * 0.01,
+     edge.arrow.size = 0.5,
+     edge.color = E(union_graph_undir)$color,
+     edge.lty = E(union_graph_undir)$lty)
+legend("topleft", legend = c("Node color:", as.character(color_vertices$house), NA, "Edge color:", as.character(colors_edges$type)), pch = 19,
+       col = c(NA, color_vertices$color, NA, NA, colors_edges$color), pt.cex = 5, cex = 2, bty = "n", ncol = 1)
+```
+
+---
+
+## Diametru
+
+Diametrul retelei - lungimea celui mai lung drum de cost minim
+
+```{r}
+diameter(union_graph_undir, directed = FALSE)
+```
+
+```{r fig.width=35, fig.height=35}
+union_graph_undir_diameter <- union_graph_undir
+node_diameter <- get.diameter(union_graph_undir_diameter,  directed = FALSE)
+V(union_graph_undir_diameter)$color <- scales::alpha(V(union_graph_undir_diameter)$color, alpha = 0.5)
+V(union_graph_undir_diameter)$size <- 2
+V(union_graph_undir_diameter)[node_diameter]$color <- "red"
+V(union_graph_undir_diameter)[node_diameter]$size <- 5
+E(union_graph_undir_diameter)$color <- "grey"
+E(union_graph_undir_diameter)$width <- 1
+E(union_graph_undir_diameter, path = node_diameter)$color <- "red"
+E(union_graph_undir_diameter, path = node_diameter)$width <- 5
+plot(union_graph_undir_diameter,
+     layout = layout,
+     vertex.label = gsub(" ", "\n", V(union_graph_undir_diameter)$name),
+     vertex.shape = V(union_graph_undir_diameter)$shape,
+     vertex.frame.color = "gray", 
+     vertex.label.color = "black", 
+     vertex.label.cex = 0.8,
+     edge.arrow.size = 0.5,
+     edge.lty = E(union_graph_undir_diameter)$lty)
+legend("topleft", legend = c("Node color:", as.character(color_vertices$house), NA, "Edge color:", as.character(colors_edges$type)), pch = 19,
+       col = c(NA, color_vertices$color, NA, NA, colors_edges$color), pt.cex = 5, cex = 2, bty = "n", ncol = 1)
+```
+
+---
+
+## Tranzitivitate

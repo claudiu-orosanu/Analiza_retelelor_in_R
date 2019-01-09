@@ -281,3 +281,224 @@ legend("topleft", legend = c("Node color:", as.character(color_vertices$house), 
 ---
 
 ## Tranzitivitate
+
+Tranzitivitatea masoara probabilitatea ca muchiile adiacente a nodurilor sunt conectate. Este de asemenea numita coeficientul de clusterizare.
+
+```{r}
+transitivity(union_graph_undir, type = "global")
+```
+
+```{r}
+transitivity <- data.frame(name = V(union_graph_undir)$name,
+      transitivity = transitivity(union_graph_undir, type = "local")) %>%
+  mutate(name = as.character(name))
+union_characters <- left_join(union_characters, transitivity, by = "name")
+transitivity %>%
+  arrange(-transitivity) %>%
+  .[1:10, ]
+```
+
+Deoarece graficul nostru este un arbore genealogic, caracterele cu tranzitivitatea de 1 formeaza un triunghi cu parintii sau copii.
+
+---
+
+## PageRank centrality (PR)
+
+Este un algoritm prin care se stabilesc cele mai importante noduri din retea prin prisma faptului ca acestea contin multe muchii. Acset algoritm a fost dezvoltat prima data de catre Google.
+
+```{r}
+page_rank <- page.rank(union_graph_undir, directed = FALSE)
+page_rank_centrality <- data.frame(name = names(page_rank$vector),
+      page_rank = page_rank$vector) %>%
+  mutate(name = as.character(name))
+union_characters <- left_join(union_characters, page_rank_centrality, by = "name")
+page_rank_centrality %>%
+  arrange(-page_rank) %>%
+  .[1:10, ]
+```
+In cazul nostru Oberyn Martell, Quellon Greyjoy si Walder Frey sunt cele mai importante noduri pentru ca au numarul cel mai mare de sotii, copii si nepoti.
+
+---
+
+## Eigenvector centrality
+
+```{r}
+adjacency <- as.matrix(as_adjacency_matrix(union_graph_undir))
+```
+
+Folosind matricea de adiacenta putem calcula eigenvalues(scalari ai vectoriilor) si eigenvectors(vectorii caracteristici) matricei.
+
+```{r}
+#degree diagonal matrix
+degree_diag <- diag(1 / igraph::degree(union_graph_undir))
+# PageRank matrix
+pagerank <- adjacency %*% degree_diag
+eigenvalues <- eigen(pagerank)
+```
+
+Vectorul (eigenvector) cu cel mai mare scalar (eigenvalue) ofera o mai mare importanta nodului de care apartine deaorece este conectat la alte noduri cu mule muchii.
+
+```{r warning=FALSE, message=FALSE}
+eigenvector <- data.frame(name = rownames(pagerank),
+           eigenvector = as.numeric(eigenvalues$vectors[, which.max(eigenvalues$values)]))
+union_characters <- left_join(union_characters, eigenvector, by = "name")
+eigenvector %>%
+  arrange(eigenvector) %>%
+  .[1:10, ]
+```
+
+Familia care are cele mai multe conexiuni este Greyjoy (eigenvalue).
+
+Tywin si partea importanta a familiei Lannister este cel mai importanta vector (eigenvector).
+
+```{r}
+eigen_centrality <- igraph::eigen_centrality(union_graph_undir, directed = FALSE)
+eigen_centrality <- data.frame(name = names(eigen_centrality$vector),
+           eigen_centrality = eigen_centrality$vector) %>%
+  mutate(name = as.character(name))
+union_characters <- left_join(union_characters, eigen_centrality, eigenvector, by = "name")
+eigen_centrality %>%
+  arrange(-eigen_centrality) %>%
+  .[1:10, ]
+```
+
+---
+
+## Care sunt cele mai importante caractere?
+
+Putem compara acum toata informatia stocata la nivelul nodurilor pentru a decide care este cel mai important personaj in Game of Thrones.
+
+Vom afisa toate personajele caselor importante
+
+```{r fig.width=40, fig.height=20, warning=FALSE}
+union_characters %>%
+  filter(!is.na(house2)) %>%
+  dplyr::select(-contains("_std")) %>%
+  gather(x, y, degree:eigen_centrality) %>%
+  ggplot(aes(x = name, y = y, color = house2)) +
+    geom_point(size = 3) +
+    facet_grid(x ~ house2, scales = "free") +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+```
+
+Vom observa ca familiile Stark si Lannister sunt cele mai importante conexiuni ale familiilor in GoT.
+
+
+---
+
+## Grupuri de noduri
+
+Putem grupa nodurile numarul de clicuri care se afla intre mai multe noduri. De asemenea putem calcula numarul de cai sau cicluri de orice lungime. Pentru muchii putem obtine o suma a tuturor cailor si ciclurilor  pana la lungimea maxima. Iar pentru noduri putem obtine numarul de cai sau cicluri de care aprtine acestea.
+
+```{r}
+node_kpath <- kpath.census(adjacency, maxlen = 5, mode = "graph", tabulate.by.vertex = TRUE, dyadic.tabulation = "sum")
+edge_kpath <- kpath.census(adjacency, maxlen = 5, mode = "graph", tabulate.by.vertex = FALSE)
+edge_kpath
+```
+
+```{r fig.width=30, fig.height=30, eval=FALSE}
+gplot(node_kpath$paths.bydyad,
+      label.cex = 0.5, 
+      vertex.cex = 0.75,
+      displaylabels = TRUE,
+      edge.col = "grey")
+```
+
+```{r}
+node_kcycle <- kcycle.census(adjacency, maxlen = 8, mode = "graph", tabulate.by.vertex = TRUE, cycle.comembership = "sum")
+edge_kcycle <- kcycle.census(adjacency, maxlen = 8, mode = "graph", tabulate.by.vertex = FALSE)
+edge_kcycle
+```
+
+
+```{r fig.width=20, fig.height=20}
+node_kcycle_reduced <- node_kcycle$cycle.comemb
+node_kcycle_reduced <- node_kcycle_reduced[which(rowSums(node_kcycle_reduced) > 0), which(colSums(node_kcycle_reduced) > 0)]
+gplot(node_kcycle_reduced,
+      label.cex = 0.5, 
+      vertex.cex = 0.75,
+      displaylabels = TRUE,
+      edge.col = "grey")
+```
+
+Pentru a stabili numarul maxim de noduri adiacente vom folosi "*clique.census()*"
+
+```{r}
+node_clique <- clique.census(adjacency, mode = "graph", tabulate.by.vertex = TRUE, clique.comembership = "sum")
+edge_clique <- clique.census(adjacency, mode = "graph", tabulate.by.vertex = FALSE, clique.comembership = "sum")
+edge_clique$clique.count
+```
+
+
+```{r fig.width=15, fig.height=15}
+node_clique_reduced <- node_clique$clique.comemb
+node_clique_reduced <- node_clique_reduced[which(rowSums(node_clique_reduced) > 0), which(colSums(node_clique_reduced) > 0)]
+gplot(node_clique_reduced,
+      label.cex = 0.5, 
+      vertex.cex = 0.75,
+      displaylabels = TRUE,
+      edge.col = "grey")
+```
+
+---
+
+## Clusterizare
+
+De asemenea putem sa selectam grupuri din reteaua noastra prin clusterizarea nodul grupurilor in functie de muchiile lor
+
+```{r fig.width=20, fig.height=20}
+ceb <- cluster_edge_betweenness(union_graph_undir)
+modularity(ceb)
+plot(ceb,
+     union_graph_undir,
+     layout = layout,
+     vertex.label = gsub(" ", "\n", V(union_graph_undir)$name),
+     vertex.shape = V(union_graph_undir)$shape,
+     vertex.size = (V(union_graph_undir)$popularity + 0.5) * 5, 
+     vertex.frame.color = "gray", 
+     vertex.label.color = "black", 
+     vertex.label.cex = 0.8)
+```
+
+Sau folosind "propagating labels" pentru a gasi comunitati
+
+```{r fig.width=20, fig.height=20}
+clp <- cluster_label_prop(union_graph_undir)
+plot(clp,
+     union_graph_undir,
+     layout = layout,
+     vertex.label = gsub(" ", "\n", V(union_graph_undir)$name),
+     vertex.shape = V(union_graph_undir)$shape,
+     vertex.size = (V(union_graph_undir)$popularity + 0.5) * 5, 
+     vertex.frame.color = "gray", 
+     vertex.label.color = "black", 
+     vertex.label.cex = 0.8)
+```
+
+---
+
+## Proprietatile retelei
+
+Putem afla matricea de adiacenta folosind si functii precum *GenInd()* din libraria **NetIndices**. Aceasta functie returneaza proprietati precum: numarul de compartimente (N), inputul total a sistemului (T..), fluxul total a sistemului (TST), numarul intern de legaturi (Lint), numarul total de legaturi (Ltot), densitatea (LD), nivelul de conectare (C)
+
+```{r warning=FALSE, message=FALSE}
+library(NetIndices)
+graph.properties <- GenInd(adjacency)
+graph.properties
+```
+
+sau: 
+```{r warning=FALSE, message=FALSE}
+library(network)
+adj_network <- network(adjacency, directed = TRUE)
+adj_network
+```
+
+equiv.clust calculeaza hierarhic nivelul de clusterizare folosind pozitiile din retea
+```{r fig.width=30, fig.height=10}
+ec <- equiv.clust(adj_network, mode = "graph", cluster.method = "average", plabels = network.vertex.names(adj_network))
+ec
+ec$cluster$labels <- ec$plabels
+plot(ec)
+```
